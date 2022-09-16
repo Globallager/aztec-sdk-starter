@@ -13,6 +13,8 @@ import {
   RegisterController,
   DepositController,
   DefiController,
+  BridgeCallData,
+  Signer,
 } from "@aztec/sdk";
 import { Web3Provider } from "@ethersproject/providers";
 
@@ -135,4 +137,58 @@ export async function registerAccount(
   await controller.sign();
   let txId = await controller.send();
   return txId;
+}
+
+export async function bridge(
+  userId: GrumpkinAddress,
+  userSigner: Signer,
+  bridgeAddress: string,
+  inputAssetASymbol: string,
+  outputAssetASymbol: string,
+  inputAssetBSymbol: string | undefined,
+  outputAssetBSymbol: string | undefined,
+  auxData: number,
+  settlementTime: TxSettlementTime,
+  sdk: AztecSdk
+): Promise<TxId> {
+  // Initiate bridge call data parameters
+  const bridgeAddressId = sdk.getBridgeAddressId(EthAddress.fromString(bridgeAddress));
+  const inputAssetIdA = sdk.getAssetIdBySymbol(inputAssetASymbol.toUpperCase());
+  const outputAssetIdA = sdk.getAssetIdBySymbol(outputAssetASymbol.toUpperCase());
+  let inputAssetIdB: number | undefined;
+  let outputAssetIdB: number | undefined;
+  if (inputAssetBSymbol !== undefined) {
+    inputAssetIdB = sdk.getAssetIdBySymbol(inputAssetBSymbol.toUpperCase());
+  } else {
+    inputAssetIdB = inputAssetBSymbol;
+  }
+  if (outputAssetBSymbol !== undefined) {
+    outputAssetIdB = sdk.getAssetIdBySymbol(outputAssetBSymbol.toUpperCase());
+  } else {
+    outputAssetIdB = outputAssetBSymbol;
+  }
+
+  const bridgeCallData = new BridgeCallData(
+    bridgeAddressId,
+    inputAssetIdA,
+    outputAssetIdA,
+    inputAssetIdB,
+    outputAssetIdB,
+    auxData,
+  );
+
+  // Initiate controller parameters
+  const assetValue: AssetValue = (sdk.toBaseUnits(inputAssetIdA, String(auxData)));
+  const fee = (await sdk.getDefiFees(bridgeCallData))[settlementTime];
+
+  const controller = sdk.createDefiController(
+    userId,
+    userSigner,
+    bridgeCallData,
+    assetValue,
+    fee
+  );
+
+  await controller.createProof();
+  return await controller.send();
 }
