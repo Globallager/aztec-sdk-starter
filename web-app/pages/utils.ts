@@ -15,6 +15,7 @@ import {
   DefiController,
   BridgeCallData,
   Signer,
+  AztecSdkUser,
 } from "@aztec/sdk";
 import { Web3Provider } from "@ethersproject/providers";
 
@@ -139,10 +140,11 @@ export async function registerAccount(
   return txId;
 }
 
-export async function bridge(
-  userId: GrumpkinAddress,
+export async function bridgeDefi(
+  user: AztecSdkUser,
   userSigner: Signer,
   bridgeAddress: string,
+  inputAssetAAmount: bigint,
   inputAssetASymbol: string,
   outputAssetASymbol: string,
   inputAssetBSymbol: string | undefined,
@@ -178,11 +180,11 @@ export async function bridge(
   );
 
   // Initiate controller parameters
-  const assetValue: AssetValue = (sdk.toBaseUnits(inputAssetIdA, String(auxData)));
+  const assetValue: AssetValue = { assetId: inputAssetIdA, value: inputAssetAAmount };
   const fee = (await sdk.getDefiFees(bridgeCallData))[settlementTime];
 
   const controller = sdk.createDefiController(
-    userId,
+    user.id,
     userSigner,
     bridgeCallData,
     assetValue,
