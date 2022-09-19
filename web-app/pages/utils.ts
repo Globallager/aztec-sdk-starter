@@ -19,10 +19,6 @@ import {
 } from "@aztec/sdk";
 import { Web3Provider } from "@ethersproject/providers";
 
-export const DAI_ADDRESS = EthAddress.fromString(
-  "0x86166410B7A1a6D8B9DF3660a978eA79Aa1F30FD"
-); // goerli
-
 const privateKeyMessage = Buffer.from(
   `Sign this message to generate your Aztec Privacy Key. This key lets the application decrypt your balance on Aztec.\n\nIMPORTANT: Only sign this message if you trust the application.`
 );

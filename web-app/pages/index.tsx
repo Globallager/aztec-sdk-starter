@@ -65,7 +65,7 @@ const Home: NextPage = () => {
         );
 
         const sdk = await createAztecSdk(ethereumProvider, {
-          serverUrl: "https://api.aztec.network/aztec-connect-testnet/falafel", // goerli testnet
+          serverUrl: "https://api.aztec.network/aztec-connect-testnet/falafel", // testnet
           pollInterval: 1000,
           memoryDb: true,
           debug: "bb:*",
